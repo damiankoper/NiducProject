@@ -10,4 +10,4 @@ class ModulatorPSK(ModulatorBase):
     def demodulate(self, bods):
         symbols = self.getSymbolsFromSignal(bods)
         psk = komm.PSKModulation(self.orders[0], self.amplitudes[0], self.phaseOffsets[0])
-        return psk.demodulate(bods)
+        return psk.demodulate(symbols)

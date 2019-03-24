@@ -2,12 +2,11 @@ import scipy.io.wavfile as wavfile
 import numpy as np
 import plotly
 import plotly.graph_objs as go
-
-
+from Plotter.Plotter import Plotter
 class AudioDataGenerator:
     # int[8|16|32|float] array
     data = np.array([])
-    
+
     bitrate = 1
     dataSource = "None"
 
@@ -21,13 +20,14 @@ class AudioDataGenerator:
         self.data = np.average(self.data, axis=1).astype(dataType)
         self.dataSource = filename
 
-
     def getDataLengthInSec(self):
         return self.data.size / self.bitrate
 
     def plotData(self, filename="temp-plot"):
         xLinspace = np.linspace(0, self.getDataLengthInSec(), self.data.size)
-        figure = go.Figure(
+        Plotter.scatter(
+            x=xLinspace,
+            y=self.data,
             layout=go.Layout(
                 title=self.dataSource,
                 xaxis=dict(
@@ -37,13 +37,8 @@ class AudioDataGenerator:
                     title='Wartość próbki'
                 )
             ),
-            data=[
-                go.Scatter(
-                    x=xLinspace,
-                    y=self.data)
-            ]
+            filename=filename
         )
-        plotly.offline.plot(figure, filename=filename)
 
     def getDataType(self):
         return self.data.dtype

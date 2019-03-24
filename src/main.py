@@ -1,62 +1,40 @@
 from Generators.AudioDataGenerator import AudioDataGenerator
 from Modulators.ModulatorPSK import ModulatorPSK
-import plotly
+from Modulators.ModulatorASK import ModulatorASK
 import plotly.graph_objs as go
+
 import numpy as np
 import scipy
+from Plotter.Plotter import Plotter
 
 generator = AudioDataGenerator()
 generator.setDataFromWav('assets/guitar.wav')
-# generator.plotData(filename="plots/guitar")
+generator.plotData(filename="plots/guitar")
+
+bits = generator.getBits()
 
 modulatorPKS = ModulatorPSK()
-signal = modulatorPKS.getSignal(generator.getBits()[:4])[:128]
+signal = modulatorPKS.getSignal(bits)
+#signal = signal + 10 * np.random.randn(signal.size)
+#Plotter.scatter(y=signal[:1024], layout=go.Layout(title="Modulacja ASK 4 wartościowa, 64 próbki/symbol"))
 
-modulatorPKS.demodulate(signal)
-
-""" 
-spectrum = np.fft.fft(signal)
-
-figure = go.Figure(
-    data=[
-        go.Scatter(
-            y = (spectrum/32).imag,
-        )
-    ]
-)
-plotly.offline.plot(figure, filename="phase")
-
-
-figure = go.Figure(
-    layout=go.Layout(
-        xaxis=dict(
-            scaleanchor='y'
-        )
-
+ 
+symbols = modulatorPKS.getSymbolsFromSignal(signal)[:1024]
+Plotter.scatter(y=symbols.imag, x=symbols.real, layout=go.Layout(
+    xaxis=dict(
+        scaleanchor='y'
     ),
-    data=[
-        go.Scatter(
-            y=signal,
-        )
-    ]
+    title="Modulacja PSK 4 wartościowa - konstelacja"
+),
+    mode="markers"
 )
-plotly.offline.plot(figure, filename="XD")
- """
-""" 
-figure = go.Figure(
-    layout=go.Layout(
-        xaxis=dict(
-            scaleanchor='y'
-        )
-       
-    ),
-    data=[
-        go.Scatter(
-            x=modulated.real,
-            y=modulated.imag,
-            mode = 'markers'
-        )
-    ]
-)
-plotly.offline.plot(figure, filename="XD")
+"""
+demodulated = modulatorPKS.demodulate(signal)
+
+
+print(bits)
+print(demodulated)
+print(np.nonzero(bits - demodulated))
+print(np.nonzero(bits - demodulated)[0].size)
+print("BER: ", np.nonzero(bits - demodulated)[0].size / bits.size)
  """
