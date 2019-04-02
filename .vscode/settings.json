@@ -1,6 +1,7 @@
 {
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true,
+    "python.jediEnabled": false,
     "python.linting.pep8Enabled": false,
     "python.envFile": "${workspaceFolder}/.env"
 }
