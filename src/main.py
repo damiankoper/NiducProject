@@ -2,42 +2,39 @@ from Generators.AudioDataGenerator import AudioDataGenerator
 from Modulators.ModulatorPSK import ModulatorPSK
 from Modulators.ModulatorASK import ModulatorASK
 from Noiser.Noiser import Noiser
+from Tester.Tester import Tester
+
 import plotly.graph_objs as go
 import numpy as np
 import scipy
 from Plotter.Plotter import Plotter
 
+tester = Tester()
+
 generator = AudioDataGenerator()
 generator.setDataFromWav('assets/guitar.wav')
-bits = generator.getBits()
+bits = generator.getBits()[:32768]  # symulowana paczka po 4 KB
 
 # PSK ORDERS x SNR
-testOrders = (2, 4)
-testSNR = (1, 100)
 
-modulatorPKS = ModulatorPSK()
+modulator = ModulatorPSK()
+modulator.amplitudes = (1,)
+modulator.phaseOffsets = (1,)
+testOrders = (2, 64)
 testOrder = testOrders[0]
+testSNRs = np.linspace(1, 30, 100)
 while(True):
-    print(testOrder)
+    modulator.orders = (testOrder,)
+    signal = modulator.getSignal(bits)
+    alignedBits = modulator.getAlignedBits(bits)
+    print("Processing PSK order:", testOrder, "SNR from", testSNRs[0], "to",testSNRs[-1])
+    for testSNR in testSNRs:
+        signalNoised = Noiser.normal(signal.copy(), snr=testSNR)
+        demodulated = modulator.demodulate(signalNoised)
+        BER = np.nonzero(alignedBits - demodulated)[0].size / alignedBits.size
+        tester.writeResultToDB(modulator, testSNR, signal, BER, description="PSK - BER to (order, snr)")
+
     if testOrder == testOrders[1]:
         break
-    testOrder *= 2
-
-
-signal = modulatorPKS.getSignal(bits)
-Noiser.snr = 10
-signal = Noiser.normal(signal)
-Plotter.scatter(y=signal[:1024], layout=go.Layout(
-    title="Modulacja ASK 4 wartościowa, 64 próbki/symbol"))
-
-
-"""
-demodulated = modulatorPKS.demodulate(signal)
-
-
-print(bits)
-print(demodulated)
-print(np.nonzero(bits - demodulated))
-print(np.nonzero(bits - demodulated)[0].size)
-print("BER: ", np.nonzero(bits - demodulated)[0].size / bits.size)
-"""
+    else:
+        testOrder *= 2

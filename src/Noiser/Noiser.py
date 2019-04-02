@@ -2,11 +2,9 @@ import numpy as np
 
 
 class Noiser:
-    snr = 1
-
     @staticmethod
-    def normal(signal):
+    def normal(signal, snr = 1):
         signalAvgPower = np.mean(signal*signal)
-        noise = (signalAvgPower / Noiser.snr) * np.random.randn(signal.size)
+        noise = (signalAvgPower / snr) * np.random.randn(signal.size)
 
         return signal + noise
