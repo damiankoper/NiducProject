@@ -4,35 +4,39 @@ from Tester.Tester import Tester
 from Plotter.Plotter import Plotter
 import sqlite3 as sql
 import json
-import plotly as py
+import plotly as plotly
 import plotly.graph_objs as go
 import math
 
-generator = AudioDataGenerator()
-generator.setDataFromWav('assets/guitar.wav')
-bits = generator.getBits()[:32768]  # symulowana paczka po 4 KB
+if input("Do you want to run tests? [y/n]:") in ['yes','y','ye']:
+    generator = AudioDataGenerator()
+    generator.setDataFromWav('assets/guitar.wav')
+    bits = generator.getBits()[:32768]  # symulowana paczka po 4 KB
+    tester = Tester()
+    pskTests.OrderSnr(bits,tester)
+    pskTests.OrderSampFreq(bits, tester)
+else: print('No assumed') 
 
-tester = Tester()
 
 
+### Generowanie wykresów
 
-pskTests.OrderSnr(bits,tester)
 conn = sql.connect('plots/db/results.db')
+
 result = conn.execute(
     """
     SELECT * FROM results WHERE description=?
     """, ("PSK - BER to (order, snr)",)
 ).fetchall()
 
-Plotter.OrderSnr(result, modType="PSK")
+Plotter.OrderSnr(result, modType="PSK", filename="plots/PSK/OrderSnr.html")
+Plotter.OrderSnr2D(result, modType="PSK", filename="plots/PSK/OrderSnr2D.html")
+ 
 
-
-
-
-pskTests.OrderSampFreq(bits, tester)
 result = conn.execute(
     """
     SELECT * FROM results WHERE description=?
     """, ("PSK - BER to (order, sample frequency)",)
 ).fetchall()
-Plotter.OrderSampFreq(result, modType="PSK")
+Plotter.OrderSampFreq(result, modType="PSK", filename="plots/PSK/OrderSampleFreq.html")
+Plotter.OrderSampFreq2D(result, modType="PSK", filename="plots/PSK/OrderSampleFreq2D.html")

@@ -6,7 +6,7 @@ import numpy as np
 def OrderSnr(bits, tester):
 
     modulator = ModulatorPSK()
-    modulator.amplitudes = (1,)
+    modulator.amplitudes = (10,)
     modulator.phaseOffsets = (1,)
     testOrders = (2, 64)
     testOrder = testOrders[0]
@@ -34,7 +34,7 @@ def OrderSnr(bits, tester):
 def OrderSampFreq(bits, tester):
 
     modulator = ModulatorPSK()
-    modulator.amplitudes = (1,)
+    modulator.amplitudes = (10,)
     modulator.phaseOffsets = (1,)
     testOrders = (2, 64)
     testOrder = testOrders[0]

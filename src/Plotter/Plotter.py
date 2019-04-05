@@ -62,6 +62,51 @@ class Plotter:
         plotly.offline.plot(figure, filename=filename)
 
     @staticmethod
+    def OrderSnr2D(result, modType, filename="temp-plot"):
+        x = []
+        y = []
+        z = []
+        for res in result:
+            snr = res[7]
+            try:
+                x.index(snr)
+            except ValueError as e:
+                x.append(snr)
+
+            order = sum(json.loads(res[2]))
+            try:
+                posOrder = y.index(order)
+                z[posOrder].append(res[8])
+            except ValueError as e:
+                y.append(order)
+                z.append([res[8]])
+
+        data = []
+        for index, order in enumerate(y):
+            scatter = go.Scatter(
+                y=z[index],
+                x=x,
+                name=order,
+                mode='lines+markers'
+            )
+            data.append(scatter)
+
+            layout = go.Layout(
+                title=modType+" - BER od wartościowości modulacji i SNR sygnału demodulowanego",
+                xaxis=dict(
+                    title="SNR"
+                ),
+                yaxis=dict(
+                    title="BER"
+                )
+            )
+        figure = go.Figure(
+            layout=layout,
+            data=data
+        )
+        plotly.offline.plot(figure, filename=filename)
+
+    @staticmethod
     def OrderSampFreq(result, modType, filename="temp-plot"):
         x = []
         y = []
@@ -101,5 +146,51 @@ class Plotter:
                 )
             ],
             layout=layout
+        )
+        plotly.offline.plot(figure, filename=filename)
+
+    @staticmethod
+    def OrderSampFreq2D(result, modType, filename="temp-plot"):
+        x = []
+        y = []
+        z = []
+        for res in result:
+            snr = res[6]
+            try:
+                x.index(snr)
+            except ValueError as e:
+                x.append(snr)
+
+            order = sum(json.loads(res[2]))
+            try:
+                posOrder = y.index(order)
+                z[posOrder].append(res[8])
+            except ValueError as e:
+                y.append(order)
+                z.append([res[8]])
+
+        data = []
+        for index, order in enumerate(y):
+            scatter = go.Scatter(
+                y=z[index],
+                x=x,
+                name=order,
+                mode='lines+markers'
+            )
+            data.append(scatter)
+
+        layout = go.Layout(
+            title=modType+" - BER od wartościowości i częstotliwości próbkowania sygnału, SNR: " +
+            str(round(result[0][7], 2)),
+            xaxis=dict(
+                title="Częstotliwość próbkowania"
+            ),
+            yaxis=dict(
+                title="BER"
+            )
+        )
+        figure = go.Figure(
+            layout=layout,
+            data=data
         )
         plotly.offline.plot(figure, filename=filename)
