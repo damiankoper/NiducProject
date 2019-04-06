@@ -10,6 +10,14 @@ class Tester:
         self.conn.execute("DELETE FROM results")
         self.conn.commit()
 
+    def clearSeries(self, description=("")):
+         self.conn.execute(
+            """
+            DELETE FROM results
+            WHERE description IN ?
+            """,
+            )
+
     def writeResultToDB(self, modulator, snr, signal, ber, description=""):
         self.conn.execute(
             """

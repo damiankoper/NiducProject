@@ -1,5 +1,6 @@
 from Generators.AudioDataGenerator import AudioDataGenerator
 import Tester.tests.PSK as pskTests
+import Tester.tests.ASK as askTests
 from Tester.Tester import Tester
 from Plotter.Plotter import Plotter
 import sqlite3 as sql
@@ -15,6 +16,8 @@ if input("Do you want to run tests? [y/n]:") in ['yes','y','ye']:
     tester = Tester()
     pskTests.OrderSnr(bits,tester)
     pskTests.OrderSampFreq(bits, tester)
+    askTests.OrderSnr(bits,tester)
+    askTests.OrderSampFreq(bits, tester)
 else: print('No assumed') 
 
 
@@ -23,6 +26,7 @@ else: print('No assumed')
 
 conn = sql.connect('plots/db/results.db')
 
+### PSK
 result = conn.execute(
     """
     SELECT * FROM results WHERE description=?
@@ -40,3 +44,22 @@ result = conn.execute(
 ).fetchall()
 Plotter.OrderSampFreq(result, modType="PSK", filename="plots/PSK/OrderSampleFreq.html")
 Plotter.OrderSampFreq2D(result, modType="PSK", filename="plots/PSK/OrderSampleFreq2D.html")
+
+### ASK
+
+result = conn.execute(
+    """
+    SELECT * FROM results WHERE description=?
+    """, ("ASK - BER to (order, snr)",)
+).fetchall()
+
+Plotter.OrderSnr(result, modType="ASK", filename="plots/ASK/OrderSnr.html")
+Plotter.OrderSnr2D(result, modType="ASK", filename="plots/ASK/OrderSnr2D.html")
+
+result = conn.execute(
+    """
+    SELECT * FROM results WHERE description=?
+    """, ("ASK - BER to (order, sample frequency)",)
+).fetchall()
+Plotter.OrderSampFreq(result, modType="ASK", filename="plots/ASK/OrderSampleFreq.html")
+Plotter.OrderSampFreq2D(result, modType="ASK", filename="plots/ASK/OrderSampleFreq2D.html")
