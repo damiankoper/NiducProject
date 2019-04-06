@@ -12,6 +12,8 @@ class ModulatorBase(ABC):
     carrierFreq = 1000
     sampleFreq = 4000
 
+    orderCountMethod = "sum"
+
     @abstractmethod
     # Zwraca tablicę postaci wykładniczych dla wszystkich bodów
     def modulate(self, bits):
@@ -26,7 +28,11 @@ class ModulatorBase(ABC):
         return np.int(np.round(self.sampleFreq/self.carrierFreq))
 
     def getAlignedBits(self, bits):
-        m = math.log2(sum(self.orders))
+        if self.orderCountMethod == "sum":
+            m = math.log2(sum(self.orders))
+        elif self.orderCountMethod == "mul":
+            m = math.log2(np.prod(self.orders))
+
         if bits.size % m != 0:
             bits = np.resize(bits, (np.int(bits.size + m-(bits.size % m))))
         return bits

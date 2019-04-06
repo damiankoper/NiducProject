@@ -1,9 +1,12 @@
 from Modulators.ModulatorPSK import ModulatorPSK
 from Noiser.Noiser import Noiser
 import numpy as np
-
+import pickle
 
 def OrderSnr(bits, tester):
+    description = "PSK - BER to (order, snr)"
+    tester.clearSeries(description)
+
 
     modulator = ModulatorPSK()
     modulator.amplitudes = (10,)
@@ -19,11 +22,14 @@ def OrderSnr(bits, tester):
               testSNRs[0], "to", testSNRs[-1], "times", 100)
         for testSNR in testSNRs:
             signalNoised = Noiser.normal(signal.copy(), snr=testSNR)
+
+            symbols = modulator.getSymbolsFromSignal(signalNoised)[:1024]
+
             demodulated = modulator.demodulate(signalNoised)
             BER = np.nonzero(
                 alignedBits - demodulated)[0].size / alignedBits.size
             tester.writeResultToDB(
-                modulator, testSNR, signal, BER, description="PSK - BER to (order, snr)")
+                modulator, testSNR, signal, BER, description=description, constellation=pickle.dumps(symbols))
 
         if testOrder == testOrders[1]:
             break
@@ -32,6 +38,9 @@ def OrderSnr(bits, tester):
 
 
 def OrderSampFreq(bits, tester):
+    description = "PSK - BER to (order, sample frequency)"
+    tester.clearSeries(description)
+
 
     modulator = ModulatorPSK()
     modulator.amplitudes = (10,)
@@ -54,7 +63,7 @@ def OrderSampFreq(bits, tester):
             BER = np.nonzero(
                 alignedBits - demodulated)[0].size / alignedBits.size
             tester.writeResultToDB(
-                modulator, 2, signal, BER, description="PSK - BER to (order, sample frequency)")
+                modulator, 2, signal, BER, description=description)
 
         if testOrder == testOrders[1]:
             break

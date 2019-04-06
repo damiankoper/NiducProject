@@ -2,9 +2,16 @@ import plotly
 import plotly.graph_objs as go
 import json
 import math
-
-
+import pickle
+import numpy as np
 class Plotter:
+
+    @staticmethod
+    def getOrder(order, modType):
+        if modType=="QAM":
+            return int(np.prod(order))
+        else:
+            return sum(order)
 
     @staticmethod
     def scatter(y, x=None, filename="temp-plot", layout=go.Layout(title="Plot"), mode=None):
@@ -32,7 +39,7 @@ class Plotter:
             except ValueError as e:
                 x.append(snr)
 
-            order = sum(json.loads(res[2]))
+            order = Plotter.getOrder(json.loads(res[2]) ,modType)
             try:
                 posOrder = y.index(order)
                 z[posOrder].append(res[8])
@@ -73,7 +80,7 @@ class Plotter:
             except ValueError as e:
                 x.append(snr)
 
-            order = sum(json.loads(res[2]))
+            order = Plotter.getOrder(json.loads(res[2]) ,modType)
             try:
                 posOrder = y.index(order)
                 z[posOrder].append(res[8])
@@ -91,15 +98,15 @@ class Plotter:
             )
             data.append(scatter)
 
-            layout = go.Layout(
-                title=modType+" - BER od wartościowości modulacji i SNR sygnału demodulowanego",
-                xaxis=dict(
-                    title="SNR"
-                ),
-                yaxis=dict(
-                    title="BER"
-                )
+        layout = go.Layout(
+            title=modType+" - BER od wartościowości modulacji i SNR sygnału demodulowanego",
+            xaxis=dict(
+                title="SNR"
+            ),
+            yaxis=dict(
+                title="BER"
             )
+        )
         figure = go.Figure(
             layout=layout,
             data=data
@@ -119,7 +126,7 @@ class Plotter:
             except ValueError as e:
                 x.append(snr)
 
-            order = sum(json.loads(res[2]))
+            order = Plotter.getOrder(json.loads(res[2]) ,modType)
             try:
                 posOrder = y.index(order)
                 z[posOrder].append(res[8])
@@ -161,7 +168,7 @@ class Plotter:
             except ValueError as e:
                 x.append(snr)
 
-            order = sum(json.loads(res[2]))
+            order = Plotter.getOrder(json.loads(res[2]) ,modType)
             try:
                 posOrder = y.index(order)
                 z[posOrder].append(res[8])
@@ -194,3 +201,55 @@ class Plotter:
             data=data
         )
         plotly.offline.plot(figure, filename=filename)
+
+    @staticmethod
+    def constellation(result, ymax, modType=None, filename="temp-plot"):
+        data = []
+        for res in result:
+            constellation = pickle.loads(res[0])
+            scatter = go.Scatter(
+                y=constellation.imag,
+                x=constellation.real,
+                name=res[1],
+                mode='markers',
+                visible=False
+            )
+            data.append(scatter)
+
+        steps = []
+        for i in range(len(data)):
+            step = dict(
+                method='restyle',
+                args=['visible', [False] * len(data)],
+                label=str(round(result[i][1], 2))
+            )
+            step['args'][1][i] = True
+            steps.append(step)
+
+        sliders = [dict(
+            active=0,
+            currentvalue={"prefix": "SNR: "},
+            pad={"t": 50},
+            steps=steps
+        )]
+        data[0]['visible'] = True
+
+        title = "Konstelacja dla wartościowości "+result[0][2] if modType is None else modType+" - Konstelacja dla wartościowości "+result[0][2]
+        layout = go.Layout(
+            title=title,
+            sliders=sliders,
+            xaxis=dict(
+                scaleanchor='y'
+            ),
+            yaxis=dict(
+                range=[-ymax, ymax]
+            )
+        )
+
+        figure = go.Figure(
+            layout=layout,
+            data=data,
+
+        )
+        plotly.offline.plot(figure, filename=filename)
+
